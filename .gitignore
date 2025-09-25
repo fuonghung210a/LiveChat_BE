@@ -1,0 +1,9 @@
+.idea
+
+# Environment variables
+.env
+.env.local
+
+# Build artifacts
+tmp/
+*.log

@@ -1,0 +1,32 @@
+package main
+
+import (
+	"gin-starter/internal/handler"
+	"gin-starter/internal/middleware"
+	"gin-starter/internal/util"
+
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	// Load config
+	cfg := util.LoadConfig()
+
+	// Init logger
+	logger := util.NewLogger()
+
+	// Init Gin engine
+	r := gin.New()
+	r.Use(middleware.Logger(logger), middleware.Recovery())
+
+	// Routes
+	api := r.Group("/api")
+	{
+		api.GET("/ping", handler.Ping)
+	}
+
+	// Start server
+	logger.Info("Starting server...", zap.String("port", cfg.Server.Port))
+	r.Run(":" + cfg.Server.Port)
+}
+
