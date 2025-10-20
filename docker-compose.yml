@@ -1,4 +1,4 @@
-version: '3.9'
+﻿version: '3.9'
 services:
   db:
     image: mysql:8.0
@@ -10,5 +10,17 @@ services:
       MYSQL_USER: ginuser
       MYSQL_PASSWORD: ginpass
     ports:
-      - "3306:3306"
+      - "3307:3306"
+  
+  redis:
+    image: redis:7-alpine
+    container_name: gin_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
 
+volumes:
+  redis_data:

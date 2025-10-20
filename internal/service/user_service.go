@@ -34,6 +34,10 @@ func (s *UserService) GetUserById(userId int64) (*model.User, error) {
 	return s.repo.FindById(userId)
 }
 
+func (s *UserService) GetUserByEmail(email string) (*model.User, error) {
+	return s.repo.FindByEmail(email)
+}
+
 func (s *UserService) UpdateUser(userId int64, name, email, password string) (*model.User, error) {
 	// Hash the password before updating
 	hashedPassword, err := util.HashPassword(password)
