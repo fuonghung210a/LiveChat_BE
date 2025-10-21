@@ -6,14 +6,19 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type UserHandler struct {
-	svc *service.UserService
+	svc    *service.UserService
+	logger *zap.Logger
 }
 
-func NewUserHandler(svc *service.UserService) *UserHandler {
-	return &UserHandler{svc: svc}
+func NewUserHandler(svc *service.UserService, logger *zap.Logger) *UserHandler {
+	return &UserHandler{
+		svc:    svc,
+		logger: logger,
+	}
 }
 
 func (h *UserHandler) Create(c *gin.Context) {
@@ -24,15 +29,31 @@ func (h *UserHandler) Create(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		h.logger.Warn("Invalid create user request",
+			zap.String("error", err.Error()),
+		)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
+	h.logger.Info("Creating new user",
+		zap.String("email", req.Email),
+		zap.String("name", req.Name),
+	)
+
 	user, err := h.svc.CreateUser(req.Name, req.Email, req.Password)
 	if err != nil {
+		h.logger.Error("Failed to create user",
+			zap.String("error", err.Error()),
+			zap.String("email", req.Email),
+		)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create user"})
 		return
 	}
+
+	h.logger.Info("User created successfully",
+		zap.Uint("user_id", user.ID),
+	)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"id": user.ID,

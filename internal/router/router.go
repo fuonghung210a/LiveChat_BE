@@ -6,17 +6,18 @@ import (
 	"go_starter/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg interface{}) {
+func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg interface{}, logger *zap.Logger) {
 	api := r.Group("/api")
 
 	// User module
 	userRepo := repository.NewUserRepository(db)
 	userSvc := service.NewUserService(userRepo)
-	userHandler := handler.NewUserHandler(userSvc)
-
+	userHandler := handler.NewUserHandler(userSvc, logger)
+	authHandler := handler.NewAuthHandler(userSvc, logger)
 	userGroup := api.Group("/user")
 	{
 		userGroup.POST("", userHandler.Create)
@@ -25,6 +26,14 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg interface{}) {
 		userGroup.GET("/:id", userHandler.GetById)
 		userGroup.PUT("/:id", userHandler.Update)
 		userGroup.DELETE("/:id", userHandler.Delete)
+	}
+
+	// Auth module
+	authGroup := api.Group("/auth")
+	{
+		authGroup.POST("/register", authHandler.Register)
+		authGroup.POST("/login", authHandler.Login)
+		authGroup.GET("/profile", authHandler.GetProfile)
 	}
 
 }

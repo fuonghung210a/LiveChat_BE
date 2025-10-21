@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	JWTSecretKey = os.Getenv("JWT_SECRET")
+	JWTSecretKey = []byte(os.Getenv("JWT_SECRET"))
 )
 
 type Claims struct {
