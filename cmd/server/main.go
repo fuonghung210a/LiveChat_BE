@@ -9,6 +9,7 @@ import (
 	"go_starter/internal/util"
 
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -17,14 +18,19 @@ func main() {
 
 	// Initialize logger
 	logger := util.NewLogger()
-	defer logger.Sync() // Flush any buffered log entries
+	defer func(logger *zap.Logger) {
+		err := logger.Sync()
+		if err != nil {
+
+		}
+	}(logger) // Flush any buffered log entries
 
 	// Connect to database
 	db := util.ConnectDB(cfg)
 	model.AutoMigrate(db)
 
 	// Initialize Gin without default middleware
-	gin.SetMode(gin.ReleaseMode) // Set to release mode to use our custom logger
+	gin.SetMode(gin.DebugMode) // Set to release mode to use our custom logger
 	r := gin.New()
 
 	// Add recovery middleware (handles panics)

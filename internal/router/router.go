@@ -2,6 +2,7 @@ package router
 
 import (
 	"go_starter/internal/handler"
+	"go_starter/internal/middleware"
 	"go_starter/internal/repository"
 	"go_starter/internal/service"
 
@@ -18,7 +19,7 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg interface{}, logger *zap.Logger
 	userSvc := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userSvc, logger)
 	authHandler := handler.NewAuthHandler(userSvc, logger)
-	userGroup := api.Group("/user")
+	userGroup := api.Group("/users")
 	{
 		userGroup.POST("", userHandler.Create)
 		userGroup.GET("", userHandler.List)
@@ -33,7 +34,7 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg interface{}, logger *zap.Logger
 	{
 		authGroup.POST("/register", authHandler.Register)
 		authGroup.POST("/login", authHandler.Login)
-		authGroup.GET("/profile", authHandler.GetProfile)
+		authGroup.GET("/profile", middleware.AuthMiddleware(), authHandler.GetProfile)
 	}
 
 }
