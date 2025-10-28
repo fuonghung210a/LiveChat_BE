@@ -39,6 +39,13 @@ func main() {
 	// Add custom logger middleware
 	r.Use(middleware.Logger(logger))
 
+	// Add CORS middleware
+	r.Use(middleware.CORS(middleware.CORSConfig{
+		AllowedOrigins: cfg.CORS.AllowedOrigins,
+		AllowedMethods: cfg.CORS.AllowedMethods,
+		AllowedHeaders: cfg.CORS.AllowedHeaders,
+	}))
+
 	// Setup routes
 	router.SetupRoutes(r, db, cfg, logger)
 
