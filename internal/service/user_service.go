@@ -7,11 +7,15 @@ import (
 )
 
 type UserService struct {
-	repo *repository.UserRepository
+	repo         *repository.UserRepository
+	emailService *EmailService
 }
 
 func NewUserService(repo *repository.UserRepository) *UserService {
-	return &UserService{repo: repo}
+	return &UserService{
+		repo:         repo,
+		emailService: NewEmailService(),
+	}
 }
 
 func (s *UserService) CreateUser(name, email, password string) (*model.User, error) {
@@ -23,7 +27,19 @@ func (s *UserService) CreateUser(name, email, password string) (*model.User, err
 
 	user := &model.User{Name: name, Email: email, Password: hashedPassword}
 	err = s.repo.Create(user)
-	return user, err
+	if err != nil {
+		return nil, err
+	}
+
+	// Send welcome email (async to not block the response)
+	go func() {
+		if err := s.emailService.SendWelcomeEmail(user.Email, user.Name); err != nil {
+			// Log the error but don't fail the user creation
+			println("Failed to send welcome email: ", err.Error())
+		}
+	}()
+
+	return user, nil
 }
 
 func (s *UserService) ListUsers() ([]*model.User, error) {

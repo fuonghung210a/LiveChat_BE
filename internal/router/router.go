@@ -19,6 +19,8 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg interface{}, logger *zap.Logger
 	userSvc := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userSvc, logger)
 	authHandler := handler.NewAuthHandler(userSvc, logger)
+	emailHandler := handler.NewEmailHandler()
+
 	userGroup := api.Group("/users")
 	{
 		userGroup.POST("", userHandler.Create)
@@ -36,5 +38,7 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB, cfg interface{}, logger *zap.Logger
 		authGroup.POST("/login", authHandler.Login)
 		authGroup.GET("/profile", middleware.AuthMiddleware(), authHandler.GetProfile)
 	}
+
+	api.POST("/email/test", emailHandler.SendTestEmail)
 
 }
